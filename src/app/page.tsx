@@ -62,6 +62,13 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black p-4">
       <h1 className="text-4xl font-bold mb-4">Tusmo</h1>
+      <div className="flex space-x-2">
+        {word.split('').map((letter, i) => (
+          <span key={i} className="p-2 border border-gray-300 rounded text-white">
+            {i === 0 ? letter : '_'}
+          </span>
+        ))}
+      </div>
       <input
         type="text"
         placeholder="Devinez le mot"
