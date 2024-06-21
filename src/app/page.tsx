@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function Home() {
   const [word, setWord] = useState('');
@@ -59,25 +59,45 @@ export default function Home() {
     setGuess('');
   };
 
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (attempts >= 6) return;
+
+      const { key } = e;
+      if (key.length === 1 && key.match(/[a-z]/i)) {
+        setGuess((prevGuess) => {
+          const newGuess = prevGuess + key.toUpperCase();
+          if (newGuess.length > word.length) {
+            return newGuess.slice(0, word.length);
+          }
+          return newGuess;
+        });
+      } else if (key === 'Backspace') {
+        setGuess((prevGuess) => prevGuess.slice(0, -1));
+      } else if (key === 'Enter') {
+        handleGuess();
+      }
+    },
+    [word, attempts, handleGuess]
+  );
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black p-4">
       <h1 className="text-4xl font-bold mb-4">Tusmo</h1>
-      <div className="flex space-x-2">
+      <div className="flex space-x-2 mb-4">
         {word.split('').map((letter, i) => (
           <span key={i} className="p-2 border border-gray-300 rounded text-white">
-            {i === 0 ? letter : '_'}
+            {i === 0 ? letter : guess[i] || '_'}
           </span>
         ))}
       </div>
-      <input
-        type="text"
-        placeholder="Devinez le mot"
-        value={guess}
-        onChange={(e) => setGuess(e.target.value.toUpperCase())}
-        className="mb-2 p-2 border border-gray-300 rounded text-black"
-        maxLength={word.length}
-        disabled={attempts >= 6}
-      />
       <button
         onClick={handleGuess}
         className="p-2 bg-blue-500 text-white rounded"
