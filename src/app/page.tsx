@@ -21,11 +21,12 @@ export default function Home() {
   }, []);
 
   const handleGuess = () => {
-    if (guess.length !== word.length) {
+    const fullGuess = word[0] + guess;
+    if (fullGuess.length !== word.length) {
       setError(`Le mot doit avoir ${word.length} lettres.`);
       return;
     }
-    if (guess[0].toUpperCase() !== word[0]) {
+    if (fullGuess[0] !== word[0]) {
       setError(`Le mot doit commencer par la lettre ${word[0]}.`);
       return;
     }
@@ -34,7 +35,7 @@ export default function Home() {
     if (attempts < 6) {
       const newFeedback = [];
       const wordLetters = word.split('');
-      const guessLetters = guess.toUpperCase().split('');
+      const guessLetters = fullGuess.split('');
 
       for (let i = 0; i < guessLetters.length; i++) {
         if (guessLetters[i] === wordLetters[i]) {
@@ -47,10 +48,10 @@ export default function Home() {
       }
 
       setFeedback([...feedback, newFeedback]);
-      setHistory([...history, guess.toUpperCase()]);
+      setHistory([...history, fullGuess]);
       setAttempts(attempts + 1);
 
-      if (guess.toUpperCase() === word) {
+      if (fullGuess === word) {
         setError('Vous avez trouvé le mot !');
       } else if (attempts + 1 === 6) {
         setError(`Vous avez épuisé vos essais. Le mot était ${word}.`);
@@ -67,13 +68,18 @@ export default function Home() {
       if (key.length === 1 && key.match(/[a-z]/i)) {
         setGuess((prevGuess) => {
           const newGuess = prevGuess + key.toUpperCase();
-          if (newGuess.length > word.length) {
-            return newGuess.slice(0, word.length);
+          if (newGuess.length >= word.length - 1) {
+            return newGuess.slice(0, word.length - 1);
           }
           return newGuess;
         });
       } else if (key === 'Backspace') {
-        setGuess((prevGuess) => prevGuess.slice(0, -1));
+        setGuess((prevGuess) => {
+          if (prevGuess.length > 0) {
+            return prevGuess.slice(0, -1);
+          }
+          return prevGuess;
+        });
       } else if (key === 'Enter') {
         handleGuess();
       }
@@ -92,9 +98,10 @@ export default function Home() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-black p-4">
       <h1 className="text-4xl font-bold mb-4">Tusmo</h1>
       <div className="flex space-x-2 mb-4">
-        {word.split('').map((letter, i) => (
+        <span className="p-2 border border-gray-300 rounded text-white">{word[0]}</span>
+        {Array.from({ length: word.length - 1 }).map((_, i) => (
           <span key={i} className="p-2 border border-gray-300 rounded text-white">
-            {i === 0 ? letter : guess[i] || '_'}
+            {guess[i] || '_'}
           </span>
         ))}
       </div>
@@ -107,11 +114,11 @@ export default function Home() {
       </button>
       {error && <div className="mt-2 text-red-500">{error}</div>}
       <div className="mt-4">
-        {history.map((guess, index) => (
+        {history.map((pastGuess, index) => (
           <div key={index} className="flex space-x-2 mb-2">
             {feedback[index].map((color, i) => (
               <span key={i} className={`w-10 h-10 text-center font-bold p-2 rounded ${color}`}>
-                {guess[i]}
+                {pastGuess[i]}
               </span>
             ))}
           </div>
