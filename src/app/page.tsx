@@ -23,7 +23,6 @@ export default function Home() {
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "")
           .toUpperCase();
-        console.log(fetchedWord);
         setWord(fetchedWord);
         setInitialWord(fetchedWord);
         resetGame();
