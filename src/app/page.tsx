@@ -38,11 +38,11 @@ export default function Home() {
 
       for (let i = 0; i < guessLetters.length; i++) {
         if (guessLetters[i] === wordLetters[i]) {
-          newFeedback.push('text-red-500');
+          newFeedback.push('bg-red-500');
         } else if (wordLetters.includes(guessLetters[i])) {
-          newFeedback.push('text-yellow-500');
+          newFeedback.push('bg-yellow-500');
         } else {
-          newFeedback.push('text-blue-500');
+          newFeedback.push('bg-blue-500');
         }
       }
 
