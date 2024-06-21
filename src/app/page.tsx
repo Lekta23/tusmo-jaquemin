@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
 export default function Home() {
+  const [initialWord, setInitialWord] = useState('');
   const [word, setWord] = useState('');
   const [guess, setGuess] = useState('');
   const [feedback, setFeedback] = useState<string[][]>([]);
@@ -11,15 +12,29 @@ export default function Home() {
   const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
+    fetchRandomWord();
+  }, []);
+
+  const fetchRandomWord = () => {
     fetch('https://trouve-mot.fr/api/random/1')
       .then(response => response.json())
       .then(data => {
-        data[0].name = data[0].name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
-        console.log(data[0].name);
-        setWord(data[0].name.toUpperCase())
+        const fetchedWord = data[0].name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        console.log(fetchedWord);
+        setWord(fetchedWord);
+        setInitialWord(fetchedWord);
+        resetGame();
       })
       .catch(error => console.error('Error fetching the word:', error));
-  }, []);
+  };
+
+  const resetGame = () => {
+    setGuess('');
+    setFeedback([]);
+    setAttempts(0);
+    setError(null);
+    setHistory([]);
+  };
 
   const handleGuess = () => {
     const fullGuess = word[0] + guess;
@@ -59,6 +74,10 @@ export default function Home() {
       }
     }
     setGuess('');
+  };
+
+  const handleRestart = () => {
+    fetchRandomWord();
   };
 
   const handleKeyPress = useCallback(
@@ -106,13 +125,25 @@ export default function Home() {
           </span>
         ))}
       </div>
-      <button
-        onClick={handleGuess}
-        className="p-2 bg-blue-500 text-white rounded"
-        disabled={attempts >= 6}
-      >
-        Deviner
-      </button>
+<div>
+  <button
+    onClick={handleGuess}
+    className="p-2 bg-blue-500 text-white rounded"
+    disabled={attempts >= 6}
+  >
+    Deviner
+  </button>
+</div>
+<div className="mt-4">
+  <button
+    onClick={handleRestart}
+    className="p-2 bg-green-500 text-white rounded flex items-center"
+  >
+    Recommencer
+  </button>
+</div>
+
+
       {error && <div className="mt-2 text-red-500">{error}</div>}
       <div className="mt-4">
         {history.map((pastGuess, index) => (
