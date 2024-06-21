@@ -8,6 +8,7 @@ export default function Home() {
   const [feedback, setFeedback] = useState<string[][]>([]);
   const [attempts, setAttempts] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
     fetch('https://trouve-mot.fr/api/random/1')
@@ -46,6 +47,7 @@ export default function Home() {
       }
 
       setFeedback([...feedback, newFeedback]);
+      setHistory([...history, guess.toUpperCase()]);
       setAttempts(attempts + 1);
 
       if (guess.toUpperCase() === word) {
@@ -62,7 +64,7 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-4">Tusmo</h1>
       <input
         type="text"
-        placeholder="Guess the word"
+        placeholder="Devinez le mot"
         value={guess}
         onChange={(e) => setGuess(e.target.value.toUpperCase())}
         className="mb-2 p-2 border border-gray-300 rounded text-black"
@@ -74,13 +76,13 @@ export default function Home() {
         className="p-2 bg-blue-500 text-white rounded"
         disabled={attempts >= 6}
       >
-        Guess
+        Deviner
       </button>
       {error && <div className="mt-2 text-red-500">{error}</div>}
       <div className="mt-4">
-        {feedback.map((fb, index) => (
+        {history.map((guess, index) => (
           <div key={index} className="flex space-x-2">
-            {fb.map((color, i) => (
+            {feedback[index].map((color, i) => (
               <span key={i} className={`p-2 border border-gray-300 rounded ${color}`}>
                 {guess[i]}
               </span>
@@ -88,7 +90,7 @@ export default function Home() {
           </div>
         ))}
       </div>
-      <p className="mt-4">Nombre d'essais restants: {6 - attempts}</p>
+      <p className="mt-4">Nombre d’essais restants: {6 - attempts}</p>
     </div>
   );
-};
+}
