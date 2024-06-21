@@ -90,7 +90,7 @@ export default function Home() {
         {history.map((guess, index) => (
           <div key={index} className="flex space-x-2">
             {feedback[index].map((color, i) => (
-              <span key={i} className={`p-2 border border-gray-300 rounded ${color}`}>
+              <span key={i} className={`p-2 rounded ${color}`}>
                 {guess[i]}
               </span>
             ))}
