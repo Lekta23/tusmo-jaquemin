@@ -65,7 +65,7 @@ export default function Home() {
         placeholder="Guess the word"
         value={guess}
         onChange={(e) => setGuess(e.target.value.toUpperCase())}
-        className="mb-2 p-2 border border-gray-300 rounded"
+        className="mb-2 p-2 border border-gray-300 rounded text-black"
         maxLength={word.length}
         disabled={attempts >= 6}
       />
