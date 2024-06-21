@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function Home() {
   const [word, setWord] = useState('');
@@ -8,6 +8,7 @@ export default function Home() {
   const [feedback, setFeedback] = useState<string[][]>([]);
   const [attempts, setAttempts] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
     fetch('https://trouve-mot.fr/api/random/1')
@@ -20,11 +21,12 @@ export default function Home() {
   }, []);
 
   const handleGuess = () => {
-    if (guess.length !== word.length) {
+    const fullGuess = word[0] + guess;
+    if (fullGuess.length !== word.length) {
       setError(`Le mot doit avoir ${word.length} lettres.`);
       return;
     }
-    if (guess[0].toUpperCase() !== word[0]) {
+    if (fullGuess[0] !== word[0]) {
       setError(`Le mot doit commencer par la lettre ${word[0]}.`);
       return;
     }
@@ -33,22 +35,23 @@ export default function Home() {
     if (attempts < 6) {
       const newFeedback = [];
       const wordLetters = word.split('');
-      const guessLetters = guess.toUpperCase().split('');
+      const guessLetters = fullGuess.split('');
 
       for (let i = 0; i < guessLetters.length; i++) {
         if (guessLetters[i] === wordLetters[i]) {
-          newFeedback.push('text-red-500');
+          newFeedback.push('bg-red-500');
         } else if (wordLetters.includes(guessLetters[i])) {
-          newFeedback.push('text-yellow-500');
+          newFeedback.push('bg-yellow-500');
         } else {
-          newFeedback.push('text-blue-500');
+          newFeedback.push('bg-blue-500');
         }
       }
 
       setFeedback([...feedback, newFeedback]);
+      setHistory([...history, fullGuess]);
       setAttempts(attempts + 1);
 
-      if (guess.toUpperCase() === word) {
+      if (fullGuess === word) {
         setError('Vous avez trouvé le mot !');
       } else if (attempts + 1 === 6) {
         setError(`Vous avez épuisé vos essais. Le mot était ${word}.`);
@@ -57,38 +60,71 @@ export default function Home() {
     setGuess('');
   };
 
+  const handleKeyPress = useCallback(
+    (e: KeyboardEvent) => {
+      if (attempts >= 6) return;
+
+      const { key } = e;
+      if (key.length === 1 && key.match(/[a-z]/i)) {
+        setGuess((prevGuess) => {
+          const newGuess = prevGuess + key.toUpperCase();
+          if (newGuess.length >= word.length - 1) {
+            return newGuess.slice(0, word.length - 1);
+          }
+          return newGuess;
+        });
+      } else if (key === 'Backspace') {
+        setGuess((prevGuess) => {
+          if (prevGuess.length > 0) {
+            return prevGuess.slice(0, -1);
+          }
+          return prevGuess;
+        });
+      } else if (key === 'Enter') {
+        handleGuess();
+      }
+    },
+    [word, attempts, handleGuess]
+  );
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black p-4">
       <h1 className="text-4xl font-bold mb-4">Tusmo</h1>
-      <input
-        type="text"
-        placeholder="Guess the word"
-        value={guess}
-        onChange={(e) => setGuess(e.target.value.toUpperCase())}
-        className="mb-2 p-2 border border-gray-300 rounded text-black"
-        maxLength={word.length}
-        disabled={attempts >= 6}
-      />
+      <div className="flex space-x-2 mb-4">
+        <span className="p-2 border border-gray-300 rounded text-white">{word[0]}</span>
+        {Array.from({ length: word.length - 1 }).map((_, i) => (
+          <span key={i} className="p-2 border border-gray-300 rounded text-white">
+            {guess[i] || '_'}
+          </span>
+        ))}
+      </div>
       <button
         onClick={handleGuess}
         className="p-2 bg-blue-500 text-white rounded"
         disabled={attempts >= 6}
       >
-        Guess
+        Deviner
       </button>
       {error && <div className="mt-2 text-red-500">{error}</div>}
       <div className="mt-4">
-        {feedback.map((fb, index) => (
-          <div key={index} className="flex space-x-2">
-            {fb.map((color, i) => (
-              <span key={i} className={`p-2 border border-gray-300 rounded ${color}`}>
-                {guess[i]}
+        {history.map((pastGuess, index) => (
+          <div key={index} className="flex space-x-2 mb-2">
+            {feedback[index].map((color, i) => (
+              <span key={i} className={`w-10 h-10 text-center font-bold p-2 rounded ${color}`}>
+                {pastGuess[i]}
               </span>
             ))}
           </div>
         ))}
       </div>
-      <p className="mt-4">Nombre d'essais restants: {6 - attempts}</p>
+      <p className="mt-4">Nombre d’essais restants: {6 - attempts}</p>
     </div>
   );
-};
+}
