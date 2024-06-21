@@ -88,9 +88,9 @@ export default function Home() {
       {error && <div className="mt-2 text-red-500">{error}</div>}
       <div className="mt-4">
         {history.map((guess, index) => (
-          <div key={index} className="flex space-x-2">
+          <div key={index} className="flex space-x-2 mb-2">
             {feedback[index].map((color, i) => (
-              <span key={i} className={`p-2 rounded ${color}`}>
+              <span key={i} className={`w-10 h-10 text-center font-bold p-2 rounded ${color}`}>
                 {guess[i]}
               </span>
             ))}
