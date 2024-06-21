@@ -14,7 +14,8 @@ export default function Home() {
     fetch('https://trouve-mot.fr/api/random/1')
       .then(response => response.json())
       .then(data => {
-        console.log(data[0].name.toUpperCase());
+        data[0].name = data[0].name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
+        console.log(data[0].name);
         setWord(data[0].name.toUpperCase())
       })
       .catch(error => console.error('Error fetching the word:', error));
